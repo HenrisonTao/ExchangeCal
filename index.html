@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head runat="server">
+    <title></title>
+    <style>
+    
+    </style>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.js"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            var fee1 = 1 - 0.15 / 100;
+            var fee2 = 1 - 0.25 / 100;
+            $("#p_Buy").val(0);
+            $("#p_BuyAm").val(1);
+            $("#10p").text(0);
+            $("#20p").text(0);
+            $("#30p").text(0);
+
+            $("#p_Buy").change(function () {
+                var b = $("#p_Buy").val();
+                var a = $("#p_BuyAm").val();
+                if (b != 0 && a != 0) {
+                    compute(b, a);
+                }
+            });
+            $("#p_BuyAm").change(function () {
+                var b = $("#p_Buy").val();
+                var a = $("#p_BuyAm").val();
+                if (b != 0 && a != 0) {
+                    compute(b, a);
+                }
+            });
+
+            function compute(b, a) {
+                var b_avg15 = (b * a) / (a * fee1);
+                var b_avg25 = (b * a) / (a * fee2);
+                var s_avg15 = (b * a) / (a * fee1 * fee1);
+                var s_avg25 = (b * a) / (a * fee2 * fee2);
+
+                $("#p_BuyOuput15").val(b_avg15.toFixed(4));
+                $("#p_BuyOuput25").val(b_avg25.toFixed(4));
+                $("#p_sellOuput15").val(s_avg15.toFixed(4));
+                $("#p_sellOuput25").val(s_avg25.toFixed(4));
+                $("#10p").text((s_avg15 * 1.1).toFixed(4));
+                $("#20p").text((s_avg15 * 1.2).toFixed(4));
+                $("#30p").text((s_avg15 * 1.3).toFixed(4));
+
+            };
+        });
+    </script>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div>
+            <h3 align="center">蹲瞯ユ</h3>
+            <table style="width: 100%" border="1">
+
+                <tr style="width: 50%">
+                    <th align="center"></th>
+                    <th align="center">禦</th>
+                    <th align="center">计秖</th>
+                    <td align="center">禦Θセ基</td>
+                    <td align="center">程ぶ芥基</td>
+                </tr>
+                <tr>
+                    <th>0.015% も尿禣</th>
+                    <td rowspan="2" align="center">
+                        <input id="p_Buy" type="number" /></td>
+                    <td rowspan="2" align="center">
+                        <input id="p_BuyAm" type="number" /></td>
+                    <td align="center">
+                        <input id="p_BuyOuput15" type="number" type="number" readonly /></td>
+                    <td align="center">
+                        <input id="p_sellOuput15" type="number" type="number" readonly /></td>
+                </tr>
+                <tr style="width: 50%">
+                    <th>0.025% も尿禣</th>
+                    <td align="center">
+                        <input id="p_BuyOuput25" type="number" readonly /></td>
+                    <td align="center">
+                        <input id="p_sellOuput25" type="number" readonly /></td>
+                </tr>
+            </table>
+        </div>
+        <hr>
+        <div>
+            把σ本虫莉基ヘ
+            <table border="1">
+                <tr>
+                    <th>10%
+                    </th>
+                    <td>
+                        <h8 id="10p"></h8>
+                    </td>
+                </tr>
+                <tr>
+                    <th>20%
+                    </th>
+                    <td>
+                        <h8 id="20p"></h8>
+                    </td>
+                </tr>
+                <tr>
+                    <th>30%
+                    </th>
+                    <td>
+                        <h8 id="30p"></h8>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <h3 align="center">禦キА基</h3>
+
+        </div>
+    </form>
+</body>
+</html>
