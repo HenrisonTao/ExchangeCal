@@ -22,16 +22,16 @@
 
             N_on = function () {
                 lock = true;
+                reNewPrice();
                 if (Now_price > Input_price) {
                     $('#chatAudio')[0].play(); //播放声音
                 }
-
                 console.log('開');
-
-            };
+                            };
 
             N_off = function () {
                 lock = false;
+                reNewPrice();
                 $('#chatAudio')[0].pause();
                 console.log('關');
             };
@@ -103,6 +103,11 @@
                 $("#20p").text((s_avg15 * 1.2).toFixed(4));
                 $("#30p").text((s_avg15 * 1.3).toFixed(4));
 
+            };
+
+            function reNewPrice() {
+                Now_price = $('#BMP').text();
+                Input_price = $('#BMP_Input').val();
             };
 
         });
