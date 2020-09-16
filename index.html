@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
-    <title>匯率計算</title>
+    <title>Exchange Calculator</title>
 
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.js"></script>
 
@@ -15,7 +15,7 @@
 
         $(document).ready(function () {
 
-            var ws = new WebSocket("wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD");
+            var ws_bitmex = new WebSocket("wss://www.bitmex.com/realtime?subscribe=trade:XBTUSD");
             var lock = false; //true:開提醒 ,false 關提醒
             var Now_price = 0;
             var Input_price = 0;
@@ -36,11 +36,11 @@
                 console.log('關');
             };
 
-            ws.onopen = function (evt) {
+            ws_bitmex.onopen = function (evt) {
                 console.log("Connection open ...");
             };
 
-            ws.onmessage = function (evt) {
+            ws_bitmex.onmessage = function (evt) {
                 //var txt = evt.data;
                 // console.log("Received Message: " + evt.data);
 
@@ -61,7 +61,7 @@
                 }
             };
 
-            ws.onclose = function (evt) {
+            ws_bitmex.onclose = function (evt) {
                 console.log("Connection closed.");
             };
 
@@ -112,19 +112,119 @@
 
         });
     </script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var future_name="BTC-0925"
+            var move_name = "BTC-MOVE-2020Q3"
+            var ws_ftx = new WebSocket("wss://ftx.com/ws/");
+            channel= "ticker"
+            var future= {
+                "op": "subscribe",
+                'channel': channel, 
+                'market': future_name
+            }
+            var move= {
+                "op": "subscribe",
+                'channel': channel, 
+                'market': move_name
+            }
+            var f_price=0.0
+            var m_price=0.0
+            var strike_price=0.0
+
+            ws_ftx.onopen = function (evt) {
+                console.log("Connection open ...");
+                ws_ftx.send(JSON.stringify(future))
+                ws_ftx.send(JSON.stringify(move))
+            };
+
+            ws_ftx.onmessage = function (evt) {
+                var txt = JSON.parse(evt.data);
+                console.log(evt.data)
+                if(txt.channel == channel && txt.type=="update" ){
+                    last_price= txt.data.last;
+                    if(txt.market == future_name){
+                        $("#btc_price").text(last_price);
+                        f_price=last_price;
+                    }
+                    if(txt.market == move_name){
+                        $("#move_price").text(last_price);
+                        m_price=last_price;
+                    }
+                    if(f_price && m_price &&　strike_price){
+                        short_move_profit = m_price-( f_price - strike_price);
+                        //long_move_profit = (m_price - Math.abs(f_price-strike_price)) + (f_price-f_price)
+                        $("#short_profit").text(short_move_profit.toFixed(2));
+                        //$("#long_profit").text(long_move_profit.toFixed(2));
+                    }
+                }
+            };
+
+            ws_ftx.onclose = function (evt) {
+                console.log("Connection closed.");
+            };
+
+            /** fetch api url by cors-anywhere */
+            // fetch MOVE strike price
+            const cors = 'https://cors-anywhere.herokuapp.com/'; // use cors-anywhere to fetch api data
+            const url = 'https://ftx.com/api/futures/BTC-MOVE-2020Q3/stats'; // origin api url
+            $.get(cors+url, function(data) {
+                console.log(data);
+                strike_price = data["result"].strikePrice.toFixed(2)
+                $("#move_strike").text(strike_price);
+            });
+
+        })
+    </script>
     <div>
-        <h3 align="center">匯率交易</h3>
+        <h3 align="center">FTX Move Arbitrage Calculator</h3>
         <table style="width: 100%" border="1">
 
             <tr style="width: 50%">
                 <th align="center"></th>
-                <th align="center">買入金額</th>
-                <th align="center">數量</th>
-                <td align="center">買入成本價</td>
-                <td align="center">最少賣出價</td>
+                <th align="center">MOVE strike Price</th>
+                <th align="center">MOVE current Price</th>
+                <th align="center">BTC Price</th>
+                <th align="center">Profit</th>
             </tr>
             <tr>
-                <th>0.015% 手續費</th>
+                <th>Long Move</th>
+                <td rowspan="2" align="center" >
+                    <p id="move_strike"></p>
+                </td>
+                <td rowspan="2" align="center">
+                    <p id="move_price"></p>
+                </td>
+                <td rowspan="2" align="center">
+                    <p id="btc_price"></p>
+                </td>
+                <td align="center">
+                    <p id="long_profit" ></p>
+                </td>
+            </tr>
+            <tr style="width: 50%">
+                <th>Short move</th>
+
+                <td align="center">
+                    <p id="short_profit"></p>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <hr>
+    <div>
+        <h3 align="center">Sell Price Calculator</h3>
+        <table style="width: 100%" border="1">
+
+            <tr style="width: 50%">
+                <th align="center"></th>
+                <th align="center">Buy Price</th>
+                <th align="center">Size</th>
+                <td align="center">Cost Price(With Fee)</td>
+                <td align="center">Minimum Sell Price </td>
+            </tr>
+            <tr>
+                <th>Trading fee:0.015%</th>
                 <td rowspan="2" align="center">
                     <input id="p_Buy" type="number" />
                 </td>
@@ -139,7 +239,7 @@
                 </td>
             </tr>
             <tr style="width: 50%">
-                <th>0.025% 手續費</th>
+                <th>Trading fee:0.025%</th>
                 <td align="center">
                     <input id="p_BuyOuput25" type="number" readonly />
                 </td>
@@ -149,55 +249,62 @@
             </tr>
         </table>
     </div>
-    <hr>
-    <div>
-        參考掛單獲利價目
+    <br>
+    <div>   
         <table border="1">
             <tr>
                 <th>
-                    10%
                 </th>
-                <td>
+                <th>
+                    Sell Price lookup table
+                  </th>
+            </tr>
+            <tr>
+                <th>
+                    10% Profit
+                </th>
+                <td align="center">
                     <h8 id="10p"></h8>
                 </td>
             </tr>
             <tr>
                 <th>
-                    20%
+                    20% Profit
                 </th>
-                <td>
+                <td align="center">
                     <h8 id="20p"></h8>
                 </td>
             </tr>
             <tr>
                 <th>
-                    30%
+                    30% Profit
                 </th>
-                <td>
+                <td align="center">
                     <h8 id="30p"></h8>
                 </td>
             </tr>
         </table>
     </div>
 
-    <h3 align="center">Bitmex價格</h3>
+    <hr>
+    <h3 align="center">BTC Price(Bitmex)</h3>
 
     <div>
 
         <table align="left" border="1">
             <tr>
                 <!--<th><h3 align="center">Bitmex價格</h3></th>-->
-                <th style="width:50%">Bitmex價格</th>
+                <th style="width:50%">BTC Price(Bitmex)</th>
 
-                <th style="width:50%">提醒價格 </th>
+                <th style="width:50%">Alert Price </th>
             </tr>
             <tr>
                 <td align="center"><h1 id="BMP"></h1></td>
                 <td align="center"><input id="BMP_Input" type="number" /></td>
             </tr>
             <tr>
-                <td align="center"><button id="Bon" onclick="N_on()">開提醒</button></td>
-                <td align="center"><button id="Bon" onclick="N_off()">關提醒</button></td>
+                <td align="center"><button id="Bon" onclick="N_on()">Turn On</button></td>
+                <td align="center"><button id="Bon" onclick="N_off()">Turn Off</button></td>
 
             </tr>
         </table>
