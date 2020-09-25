@@ -114,8 +114,8 @@
     </script>
     <script type="text/javascript">
         $(document).ready(function () {
-            var future_name="BTC-0925"
-            var move_name = "BTC-MOVE-2020Q3"
+            var future_name="BTC-1225"
+            var move_name = "BTC-MOVE-2020Q4"
             var ws_ftx = new WebSocket("wss://ftx.com/ws/");
             channel= "ticker"
             var future= {
@@ -167,7 +167,7 @@
             /** fetch api url by cors-anywhere */
             // fetch MOVE strike price
             const cors = 'https://cors-anywhere.herokuapp.com/'; // use cors-anywhere to fetch api data
-            const url = 'https://ftx.com/api/futures/BTC-MOVE-2020Q3/stats'; // origin api url
+            const url = 'https://ftx.com/api/futures/BTC-MOVE-2020Q4/stats'; // origin api url
             $.get(cors+url, function(data) {
                 console.log(data);
                 strike_price = data["result"].strikePrice.toFixed(2)
